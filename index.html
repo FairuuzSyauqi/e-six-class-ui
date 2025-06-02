@@ -31,14 +31,14 @@
                 <img id="profilePic" src="https://via.placeholder.com/64" alt="Profil Pengguna" class="w-full h-full object-cover">
             </div>
             <div>
-                <h2 class="text-xl font-bold">FAIRUUZ SYAUQI HAN</h2>
-                <p class="text-sm font-light">14</p>
+                <h2 id="userName" class="text-xl font-bold">Memuat Nama...</h2>
+                <p id="userNumber" class="text-sm font-light">Memuat Nomor...</p>
             </div>
         </div>
 
         <div class="bg-white p-4 rounded-t-none rounded-b-2xl shadow-lg mb-6 flex items-center justify-between text-gray-800">
             <div>
-                <p class="text-lg font-semibold">Senin, 2 Juni 2025</p>
+                <p id="currentDate" class="text-lg font-semibold">Memuat Tanggal...</p>
             </div>
             <div class="w-16 h-16 flex-shrink-0">
                 <img src="https://via.placeholder.com/64?text=Jam" alt="Icon Jam" class="w-full h-full object-contain">
@@ -85,5 +85,106 @@
         </div>
     </div>
 
-    </body>
+    <script type="module">
+        // Import modul Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Variabel global dari lingkungan Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Inisialisasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUserId = null; // ID autentikasi Firebase
+        let userLoginCode = null; // Kode yang dimasukkan pengguna untuk login
+
+        // Mendapatkan elemen-elemen DOM
+        const profilePic = document.getElementById('profilePic');
+        const userName = document.getElementById('userName');
+        const userNumber = document.getElementById('userNumber');
+        const currentDateElement = document.getElementById('currentDate');
+
+        // Fungsi untuk menampilkan tanggal saat ini
+        const displayCurrentDate = () => {
+            const today = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            currentDateElement.textContent = today.toLocaleDateString('id-ID', options);
+        };
+
+        // Autentikasi Firebase dan pemuatan data
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                console.log("Authenticated with userId:", currentUserId);
+
+                // Ambil kode login dari localStorage
+                userLoginCode = localStorage.getItem('userLoginCode');
+
+                if (userLoginCode) {
+                    // Muat data profil berdasarkan kode login
+                    loadUserProfile(userLoginCode);
+                } else {
+                    // Jika tidak ada kode login, redirect ke halaman login
+                    window.location.href = 'login.html';
+                }
+            } else {
+                // Jika tidak ada token awal, coba login anonim
+                if (initialAuthToken) {
+                    try {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } catch (error) {
+                        console.error("Error signing in with custom token:", error);
+                        // Fallback ke anonim jika token gagal
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
+                }
+            }
+        });
+
+        // Fungsi untuk memuat data profil dari Firestore
+        const loadUserProfile = async (code) => {
+            // Path dokumen Firestore untuk data pengguna
+            // Data ini harus disimpan di koleksi 'public' agar bisa diakses oleh semua pengguna
+            const userDocRef = doc(db, `artifacts/${appId}/public/users_data`, code);
+
+            try {
+                const docSnap = await getDoc(userDocRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    userName.textContent = data.name || 'Nama Tidak Ditemukan';
+                    userNumber.textContent = data.number || 'Nomor Tidak Ditemukan';
+                    if (data.profileImageURL) { // Gunakan profileImageURL jika ada
+                        profilePic.src = data.profileImageURL;
+                    } else {
+                        profilePic.src = "https://via.placeholder.com/64"; // Default jika tidak ada gambar
+                    }
+                } else {
+                    console.log("No user data found for code:", code);
+                    userName.textContent = 'Pengguna Tidak Dikenal';
+                    userNumber.textContent = '';
+                    profilePic.src = "https://via.placeholder.com/64"; // Default jika dokumen tidak ada
+                    // Opsional: Redirect kembali ke login jika kode tidak ditemukan
+                    // window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                userName.textContent = 'Error Memuat Nama';
+                userNumber.textContent = 'Error Memuat Nomor';
+                profilePic.src = "https://via.placeholder.com/64"; // Default jika ada error
+            }
+        };
+
+        // Panggil fungsi untuk menampilkan tanggal saat halaman dimuat
+        displayCurrentDate();
+    </script>
+</body>
 </html>

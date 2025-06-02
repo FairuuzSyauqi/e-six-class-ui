@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - E-SIXVASCO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">E-SIXVASCO</h1>
+        <p class="text-md text-gray-600 mb-6">Login dengan Kode Kelas</p>
+
+        <div class="mb-4">
+            <input type="text" id="loginCodeInput" placeholder="Masukkan Kode Anda"
+                   class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-200 text-center text-lg font-medium">
+        </div>
+        <button id="loginButton"
+                class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-3 rounded-xl font-semibold hover:from-purple-600 hover:to-indigo-700 transition duration-200 shadow-md">
+            Masuk
+        </button>
+        <p id="errorMessage" class="text-red-500 text-sm mt-3 hidden">Kode tidak valid. Coba lagi.</p>
+    </div>
+
+    <script type="module">
+        // Import modul Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Variabel global dari lingkungan Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Inisialisasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Mendapatkan elemen-elemen DOM
+        const loginCodeInput = document.getElementById('loginCodeInput');
+        const loginButton = document.getElementById('loginButton');
+        const errorMessage = document.getElementById('errorMessage');
+
+        let userId = null; // Akan diisi setelah autentikasi
+
+        // Autentikasi Firebase (untuk akses Firestore)
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                console.log("Authenticated with userId:", userId);
+                // Cek jika sudah ada kode tersimpan dan redirect
+                const storedCode = localStorage.getItem('userLoginCode');
+                if (storedCode) {
+                    window.location.href = 'index.html'; // Langsung ke UI jika sudah login
+                }
+            } else {
+                if (initialAuthToken) {
+                    try {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } catch (error) {
+                        console.error("Error signing in with custom token:", error);
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
+                }
+            }
+        });
+
+        // Event listener untuk tombol login
+        loginButton.addEventListener('click', async () => {
+            const loginCode = loginCodeInput.value.trim(); // Ambil kode dari input
+            errorMessage.classList.add('hidden'); // Sembunyikan pesan error sebelumnya
+
+            if (loginCode === '') {
+                errorMessage.textContent = 'Kode tidak boleh kosong.';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+
+            if (!userId) {
+                errorMessage.textContent = 'Autentikasi belum siap. Coba lagi.';
+                errorMessage.classList.remove('hidden');
+                console.error("Firebase Auth not ready.");
+                return;
+            }
+
+            // Path dokumen Firestore untuk data pengguna (menggunakan kode sebagai ID dokumen)
+            // Data ini harus disimpan di koleksi 'public' agar bisa diakses oleh semua pengguna
+            const userDocRef = doc(db, `artifacts/${appId}/public/users_data`, loginCode);
+
+            try {
+                const docSnap = await getDoc(userDocRef);
+
+                if (docSnap.exists()) {
+                    // Kode valid, simpan ke localStorage dan redirect
+                    localStorage.setItem('userLoginCode', loginCode);
+                    window.location.href = 'index.html';
+                } else {
+                    // Kode tidak ditemukan
+                    errorMessage.textContent = 'Kode tidak valid. Coba lagi.';
+                    errorMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("Error checking login code:", error);
+                errorMessage.textContent = 'Terjadi kesalahan. Coba lagi nanti.';
+                errorMessage.classList.remove('hidden');
+            }
+        });
+
+        // Opsional: Tekan Enter untuk login
+        loginCodeInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                loginButton.click();
+            }
+        });
+    </script>
+</body>
+</html>
