@@ -90,30 +90,105 @@
         </div>
     </div>
 
-    <script>
-        // Mendapatkan elemen-elemen dari DOM
+    <script type="module">
+        // Import modul Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Variabel global dari lingkungan Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Inisialisasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let userId = null; // Akan diisi setelah autentikasi
+
+        // Mendapatkan elemen-elemen DOM
         const profilePicContainer = document.getElementById('profilePicContainer');
         const profilePic = document.getElementById('profilePic');
         const fileInput = document.getElementById('fileInput');
 
-        // Menambahkan event listener untuk klik pada container foto profil
+        // Autentikasi Firebase
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                console.log("Authenticated with userId:", userId);
+                // Muat data profil setelah autentikasi
+                loadUserProfile(userId);
+            } else {
+                // Jika tidak ada token awal, coba login anonim
+                if (initialAuthToken) {
+                    try {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } catch (error) {
+                        console.error("Error signing in with custom token:", error);
+                        // Fallback ke anonim jika token gagal
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
+                }
+            }
+        });
+
+        // Fungsi untuk memuat data profil dari Firestore
+        const loadUserProfile = (currentUserId) => {
+            const userProfileDocRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile`, 'data');
+            onSnapshot(userProfileDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.profileImageBase64) {
+                        profilePic.src = data.profileImageBase64;
+                    } else {
+                        profilePic.src = "https://via.placeholder.com/64"; // Default jika tidak ada gambar
+                    }
+                } else {
+                    console.log("No profile data found for user:", currentUserId);
+                    profilePic.src = "https://via.placeholder.com/64"; // Default jika dokumen tidak ada
+                }
+            }, (error) => {
+                console.error("Error fetching profile data:", error);
+                profilePic.src = "https://via.placeholder.com/64"; // Default jika ada error
+            });
+        };
+
+        // Fungsi untuk menyimpan data gambar profil ke Firestore
+        const saveProfileImage = async (base64String) => {
+            if (!userId) {
+                console.error("User not authenticated. Cannot save profile image.");
+                return;
+            }
+            const userProfileDocRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'data');
+            try {
+                await setDoc(userProfileDocRef, { profileImageBase64: base64String }, { merge: true });
+                console.log("Profile image saved to Firestore!");
+            } catch (error) {
+                console.error("Error saving profile image to Firestore:", error);
+                // Tampilkan pesan error ke pengguna jika perlu
+                // alert("Gagal menyimpan gambar profil: " + error.message); // Hindari alert()
+            }
+        };
+
+        // Event listener untuk klik pada container foto profil
         profilePicContainer.addEventListener('click', () => {
-            // Memicu klik pada input file tersembunyi
             fileInput.click();
         });
 
-        // Menambahkan event listener untuk perubahan pada input file
+        // Event listener untuk perubahan pada input file
         fileInput.addEventListener('change', (event) => {
-            // Memeriksa apakah ada file yang dipilih
             if (event.target.files && event.target.files[0]) {
                 const reader = new FileReader();
 
                 reader.onload = (e) => {
-                    // Mengubah atribut src dari gambar profil dengan URL file yang dipilih
-                    profilePic.src = e.target.result;
+                    profilePic.src = e.target.result; // Tampilkan langsung di UI
+                    saveProfileImage(e.target.result); // Simpan ke Firestore
                 };
 
-                // Membaca file yang dipilih sebagai URL data
                 reader.readAsDataURL(event.target.files[0]);
             }
         });
