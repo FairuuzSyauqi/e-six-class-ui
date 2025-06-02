@@ -27,9 +27,14 @@
         </header>
 
         <div class="bg-gradient-to-r from-purple-500 to-indigo-600 p-4 rounded-t-2xl rounded-b-none shadow-lg flex items-center space-x-4 text-white">
-            <div class="w-16 h-16 rounded-full bg-white overflow-hidden flex-shrink-0">
-                <img src="https://via.placeholder.com/64" alt="Profil Pengguna" class="w-full h-full object-cover">
+            <div id="profilePicContainer" class="w-16 h-16 rounded-full bg-white overflow-hidden flex-shrink-0 cursor-pointer relative group">
+                <img id="profilePic" src="https://via.placeholder.com/64" alt="Profil Pengguna" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <i class="ph ph-camera text-white text-2xl"></i>
+                </div>
             </div>
+            <input type="file" id="fileInput" accept="image/*" class="hidden">
+
             <div>
                 <h2 class="text-xl font-bold">FAIRUUZ SYAUQI HAN</h2>
                 <p class="text-sm font-light">14</p>
@@ -84,5 +89,34 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Mendapatkan elemen-elemen dari DOM
+        const profilePicContainer = document.getElementById('profilePicContainer');
+        const profilePic = document.getElementById('profilePic');
+        const fileInput = document.getElementById('fileInput');
+
+        // Menambahkan event listener untuk klik pada container foto profil
+        profilePicContainer.addEventListener('click', () => {
+            // Memicu klik pada input file tersembunyi
+            fileInput.click();
+        });
+
+        // Menambahkan event listener untuk perubahan pada input file
+        fileInput.addEventListener('change', (event) => {
+            // Memeriksa apakah ada file yang dipilih
+            if (event.target.files && event.target.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    // Mengubah atribut src dari gambar profil dengan URL file yang dipilih
+                    profilePic.src = e.target.result;
+                };
+
+                // Membaca file yang dipilih sebagai URL data
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        });
+    </script>
 </body>
 </html>
