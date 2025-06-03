@@ -50,6 +50,43 @@
         .popup-menu-item:hover {
             background-color: #f7fafc; /* gray-50 */
         }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            width: 350px;
+            text-align: center;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -85,6 +122,15 @@
                     </li>
                 </ul>
             </nav>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-content">
+            <p id="modal-message" class="text-lg text-gray-800 mb-4"></p>
+            <button id="modal-close-btn" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                OK
+            </button>
         </div>
     </div>
 
@@ -145,7 +191,7 @@
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <p class="text-sm text-gray-600 mb-4">PEMBELAJARAN</p>
                 <div class="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-gray-200">
-                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                    <button id="btn-jadwal-pembelajaran" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
                         <i class="fas fa-calendar-alt text-2xl text-blue-500 mb-2"></i>
                         <span class="text-xxs text-gray-700 text-center">JADWAL PEMBELAJARAN</span>
                     </button>
@@ -185,7 +231,11 @@
         const sidebarMenu = document.getElementById('sidebar-menu');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-        // Fungsi untuk membuka sidebar
+        /**
+         * Fungsi untuk membuka sidebar.
+         * Menghapus kelas 'translate-x-full' dan menambahkan 'translate-x-0' untuk menggeser sidebar masuk.
+         * Menampilkan overlay dan mengatur opasitasnya menjadi 100%.
+         */
         function openSidebar() {
             sidebarMenu.classList.remove('translate-x-full');
             sidebarMenu.classList.add('translate-x-0');
@@ -193,10 +243,14 @@
             setTimeout(() => {
                 sidebarOverlay.classList.remove('opacity-0');
                 sidebarOverlay.classList.add('opacity-100');
-            }, 10);
+            }, 10); // Sedikit penundaan untuk transisi overlay
         }
 
-        // Fungsi untuk menutup sidebar
+        /**
+         * Fungsi untuk menutup sidebar.
+         * Menghapus kelas 'translate-x-0' dan menambahkan 'translate-x-full' untuk menggeser sidebar keluar.
+         * Mengatur opasitas overlay menjadi 0% dan menyembunyikannya setelah transisi selesai.
+         */
         function closeSidebar() {
             sidebarMenu.classList.remove('translate-x-0');
             sidebarMenu.classList.add('translate-x-full');
@@ -204,7 +258,7 @@
             sidebarOverlay.classList.add('opacity-0');
             setTimeout(() => {
                 sidebarOverlay.classList.add('hidden');
-            }, 300); // Sesuaikan dengan durasi transisi CSS
+            }, 300); // Sesuaikan dengan durasi transisi CSS (0.3s)
         }
 
         // Event listener untuk membuka sidebar
@@ -220,7 +274,10 @@
         const openPopupMenuBtn = document.getElementById('open-popup-menu');
         const saldoPopupMenu = document.getElementById('saldo-popup-menu');
 
-        // Fungsi untuk membuka/menutup pop-up menu
+        /**
+         * Fungsi untuk membuka/menutup pop-up menu saldo kas.
+         * Menggunakan toggle untuk kelas 'hidden'.
+         */
         function togglePopupMenu() {
             saldoPopupMenu.classList.toggle('hidden');
         }
@@ -238,14 +295,62 @@
             }
         });
 
-        // Event listener untuk setiap item di pop-up menu (opsional, untuk aksi)
+        // --- JavaScript untuk Modal Kustom ---
+        const customModal = document.getElementById('custom-modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        /**
+         * Fungsi untuk menampilkan modal kustom dengan pesan tertentu.
+         * @param {string} message - Pesan yang akan ditampilkan di modal.
+         */
+        function showModal(message) {
+            modalMessage.textContent = message;
+            customModal.classList.add('show');
+        }
+
+        /**
+         * Fungsi untuk menyembunyikan modal kustom.
+         */
+        function hideModal() {
+            customModal.classList.remove('show');
+        }
+
+        // Event listener untuk menutup modal saat tombol OK diklik
+        modalCloseBtn.addEventListener('click', hideModal);
+
+        // Event listener untuk menutup modal saat overlay modal diklik
+        customModal.addEventListener('click', function(event) {
+            // Hanya tutup modal jika yang diklik adalah overlay, bukan konten modal itu sendiri
+            if (event.target === customModal) {
+                hideModal();
+            }
+        });
+
+        // Event listener untuk setiap item di pop-up menu (untuk aksi)
         saldoPopupMenu.addEventListener('click', function(event) {
             const action = event.target.dataset.action;
             if (action) {
-                alert(`Anda mengklik: ${event.target.textContent}`); // Ganti dengan logika yang sesuai
+                // Mengganti alert() dengan showModal()
+                showModal(`Anda mengklik: ${event.target.textContent}`);
                 saldoPopupMenu.classList.add('hidden'); // Tutup pop-up setelah klik
             }
         });
+
+        // --- JavaScript untuk Navigasi Halaman Jadwal Pembelajaran ---
+        const btnJadwalPembelajaran = document.getElementById('btn-jadwal-pembelajaran');
+
+        /**
+         * Fungsi untuk mengarahkan pengguna ke halaman jadwal pembelajaran.
+         */
+        function goToJadwalPembelajaran() {
+            window.location.href = 'jadwal-pembelajaran.html'; // Ganti dengan path yang benar jika berbeda
+        }
+
+        // Event listener untuk tombol "JADWAL PEMBELAJARAN"
+        if (btnJadwalPembelajaran) {
+            btnJadwalPembelajaran.addEventListener('click', goToJadwalPembelajaran);
+        }
     </script>
 </body>
 </html>
