@@ -89,7 +89,12 @@
         }
 
         /* Animasi klik untuk tombol dan item menu */
-        button:active,
+        #open-sidebar:active, /* Tombol hamburger menu */
+        #close-sidebar:active, /* Tombol close sidebar */
+        #open-popup-menu:active, /* Tombol ellipsis pop-up */
+        #modal-close-btn:active, /* Tombol OK modal */
+        #btn-jadwal-pembelajaran:active, /* Tombol jadwal pembelajaran */
+        .grid.grid-cols-3 button:active, /* Semua tombol dalam grid menu */
         .popup-menu-item:active,
         .sidebar nav ul li a:active {
             transform: scale(0.98); /* Mengecil sedikit */
