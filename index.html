@@ -100,6 +100,26 @@
             transform: scale(0.98); /* Mengecil sedikit */
             transition: transform 0.1s ease-out; /* Transisi cepat untuk efek "terdorong" */
         }
+
+        /* Gaya untuk overlay transisi halaman */
+        .page-transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f2f5; /* Sesuaikan dengan warna latar belakang body atau halaman tujuan */
+            z-index: 9999; /* Pastikan di atas semua elemen lain */
+            transform: translateX(0); /* Posisi awal, menutupi layar */
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out; /* Animasi geser dan opacity */
+            opacity: 1; /* Awalnya terlihat */
+            pointer-events: auto; /* Menerima klik */
+        }
+        .page-transition-overlay.slide-out-left {
+            transform: translateX(-100%); /* Geser ke kiri */
+            opacity: 0; /* Memudar saat bergeser */
+            pointer-events: none; /* Tidak menerima klik setelah bergeser */
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -237,6 +257,8 @@
         </section>
     </div>
 
+    <div id="page-transition-overlay" class="page-transition-overlay"></div>
+
     <script>
         // Mendapatkan referensi elemen sidebar
         const openSidebarBtn = document.getElementById('open-sidebar');
@@ -350,20 +372,44 @@
             }
         });
 
-        // --- JavaScript untuk Navigasi Halaman Jadwal Pembelajaran ---
+        // --- JavaScript untuk Navigasi Halaman Jadwal Pembelajaran dengan Animasi ---
         const btnJadwalPembelajaran = document.getElementById('btn-jadwal-pembelajaran');
+        const pageTransitionOverlay = document.getElementById('page-transition-overlay');
 
         /**
-         * Fungsi untuk mengarahkan pengguna ke halaman jadwal pembelajaran.
+         * Fungsi untuk mengarahkan pengguna ke halaman jadwal pembelajaran dengan animasi.
          */
-        function goToJadwalPembelajaran() {
-            window.location.href = 'jadwal-pembelajaran.html'; // Ganti dengan path yang benar jika berbeda
+        function goToJadwalPembelajaranWithAnimation() {
+            // Pastikan overlay di posisi awal dan terlihat
+            pageTransitionOverlay.classList.remove('slide-out-left');
+            pageTransitionOverlay.style.transform = 'translateX(0)';
+            pageTransitionOverlay.style.opacity = '1';
+            pageTransitionOverlay.style.pointerEvents = 'auto';
+
+            // Beri sedikit waktu agar browser merender posisi awal sebelum memulai transisi
+            setTimeout(() => {
+                // Mulai animasi geser keluar
+                pageTransitionOverlay.classList.add('slide-out-left');
+            }, 10); // Penundaan sangat singkat
+
+            // Setelah animasi selesai, baru navigasi ke halaman baru
+            setTimeout(() => {
+                window.location.href = 'jadwal-pembelajaran.html'; // Ganti dengan path yang benar jika berbeda
+            }, 500); // Sesuaikan dengan durasi transisi CSS (0.5s)
         }
 
         // Event listener untuk tombol "JADWAL PEMBELAJARAN"
         if (btnJadwalPembelajaran) {
-            btnJadwalPembelajaran.addEventListener('click', goToJadwalPembelajaran);
+            btnJadwalPembelajaran.addEventListener('click', goToJadwalPembelajaranWithAnimation);
         }
+
+        // Pastikan overlay tersembunyi saat halaman dimuat pertama kali
+        window.addEventListener('load', () => {
+            pageTransitionOverlay.classList.remove('slide-out-left');
+            pageTransitionOverlay.style.transform = 'translateX(-100%)'; // Sembunyikan overlay
+            pageTransitionOverlay.style.opacity = '0';
+            pageTransitionOverlay.style.pointerEvents = 'none';
+        });
     </script>
 </body>
 </html>
