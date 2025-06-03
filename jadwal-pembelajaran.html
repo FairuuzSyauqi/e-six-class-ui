@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal Pelajaran</title>
+    <title>Jadwal Pembelajaran</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -18,16 +18,91 @@
         .subject-item:not(:last-child) {
             border-bottom: 1px solid #e5e7eb; /* Garis pemisah antar mata pelajaran */
         }
+
+        /* Gaya Sidebar (Disalin dari UI Profil) */
+        .sidebar {
+            transition: transform 0.3s ease-out;
+        }
+        .overlay {
+            transition: opacity 0.3s ease-out;
+        }
+        .text-xxs {
+            font-size: 0.65rem; /* Custom font size, slightly smaller than text-xs */
+        }
+
+        /* Animasi klik untuk tombol dan item menu (Disalin dari UI Profil) */
+        #open-sidebar:active, /* Tombol hamburger menu */
+        #close-sidebar:active, /* Tombol close sidebar */
+        .sidebar nav ul li a:active, /* Link di sidebar */
+        button:active { /* Semua tombol lain */
+            transform: scale(0.98); /* Mengecil sedikit */
+            transition: transform 0.1s ease-out; /* Transisi cepat untuk efek "terdorong" */
+        }
+
+        /* Gaya untuk overlay transisi halaman (Disalin dari UI Profil) */
+        .page-transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #e2e8f0; /* Sesuaikan dengan warna latar belakang body halaman ini */
+            z-index: 9999; /* Pastikan di atas semua elemen lain */
+            transform: translateX(0); /* Posisi awal, menutupi layar */
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out; /* Animasi geser dan opacity */
+            opacity: 1; /* Awalnya terlihat */
+            pointer-events: auto; /* Menerima klik */
+        }
+        .page-transition-overlay.slide-out-left {
+            transform: translateX(-100%); /* Geser ke kiri */
+            opacity: 0; /* Memudar saat bergeser */
+            pointer-events: none; /* Tidak menerima klik setelah bergeser */
+        }
     </style>
 </head>
 <body class="antialiased">
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden opacity-0 overlay"></div>
+
+    <div id="sidebar-menu" class="sidebar fixed top-0 right-0 w-64 h-full bg-white shadow-lg z-50 transform translate-x-full">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">Menu</h3>
+                <button id="close-sidebar" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <nav>
+                <ul>
+                    <li class="mb-2">
+                        <a href="index.html" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-home mr-3"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-user mr-3"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-sign-out-alt mr-3"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
     <div class="min-h-screen flex flex-col items-center py-4 px-4 sm:px-6 lg:px-8">
         <header class="w-full max-w-md flex justify-between items-center mb-8">
             <div class="text-gray-800">
-                <h1 class="text-xl font-extrabold uppercase text-gray-900">JADWAL PELAJARAN</h1>
+                <h1 class="text-xl font-extrabold uppercase text-gray-900">JADWAL PEMBELAJARAN</h1>
                 <p class="text-sm text-gray-600 uppercase">XII-6 SMAN 3 KARAWANG</p>
             </div>
-            <button class="text-gray-800 focus:outline-none p-2 rounded-full hover:bg-gray-200 transition-colors">
+            <button id="open-sidebar" class="text-gray-800 focus:outline-none p-2 rounded-full hover:bg-gray-200 transition-colors">
                 <i class="fas fa-bars text-2xl"></i>
             </button>
         </header>
@@ -42,20 +117,34 @@
                 </div>
                 <div class="p-4">
                     <div class="subject-item py-3 flex items-center">
-                        <i class="fas fa-calculator text-blue-500 text-lg mr-3"></i>
+                        <i class="fas fa-palette text-pink-500 text-lg mr-3"></i>
                         <div>
-                            <p class="font-medium text-gray-900">Matematika</p>
-                            <p class="text-sm text-gray-600">07:00 - 08:30 | Bpk. Budi</p>
+                            <p class="font-medium text-gray-900">Seni Budaya</p>
+                            <p class="text-sm text-gray-600">08:00 - 09:20 | Ibu. Hana Koesnendah</p>
                         </div>
                     </div>
                     <div class="subject-item py-3 flex items-center">
-                        <i class="fas fa-book-open text-green-500 text-lg mr-3"></i>
+                        <i class="fas fa-language text-blue-500 text-lg mr-3"></i>
                         <div>
-                            <p class="font-medium text-gray-900">Bahasa Indonesia</p>
-                            <p class="text-sm text-gray-600">08:30 - 10:00 | Ibu. Ani</p>
+                            <p class="font-medium text-gray-900">Bahasa Inggris</p>
+                            <p class="text-sm text-gray-600">09:20 - 11:35 | Ibu. Tuti Fadilah, S.Pd.</p>
                         </div>
                     </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-laptop-code text-green-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Informatika</p>
+                            <p class="text-sm text-gray-600">12:35 - 13:55 | Bpk. Gumgum Rahayu Gumelar, S.Kom.</p>
+                        </div>
                     </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-dna text-red-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Biologi</p>
+                            <p class="text-sm text-gray-600">13:55 - 15:15 | Ibu. Rosmalinda Nurhubaini, S.Pd.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-[1.01]">
@@ -65,17 +154,38 @@
                 </div>
                 <div class="p-4">
                     <div class="subject-item py-3 flex items-center">
-                        <i class="fas fa-atom text-purple-500 text-lg mr-3"></i>
+                        <i class="fas fa-landmark text-gray-500 text-lg mr-3"></i>
                         <div>
-                            <p class="font-medium text-gray-900">Fisika</p>
-                            <p class="text-sm text-gray-600">07:00 - 08:30 | Bpk. Cahyo</p>
+                            <p class="font-medium text-gray-900">Sejarah</p>
+                            <p class="text-sm text-gray-600">07:30 - 08:50 | Ibu. Riri Hijriah, S.Pd.</p>
                         </div>
                     </div>
                     <div class="subject-item py-3 flex items-center">
                         <i class="fas fa-flask text-yellow-500 text-lg mr-3"></i>
                         <div>
                             <p class="font-medium text-gray-900">Kimia</p>
-                            <p class="text-sm text-gray-600">08:30 - 10:00 | Ibu. Dewi</p>
+                            <p class="text-sm text-gray-600">08:50 - 10:10 | Ibu. Hj. Nur Rosmanah, S.Pd.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-dna text-red-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Biologi</p>
+                            <p class="text-sm text-gray-600">10:25 - 11:45 | Ibu. Rosmalinda Nurhubaini, S.Pd.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-calculator text-blue-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Matematika</p>
+                            <p class="text-sm text-gray-600">12:30 - 13:50 | Bpk. Bay Bagus Teguh I, M.Pd.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-book-open text-green-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Bahasa Indonesia</p>
+                            <p class="text-sm text-gray-600">13:50 - 15:10 | Ibu. Dra. Nunung Haryati</p>
                         </div>
                     </div>
                 </div>
@@ -88,17 +198,37 @@
                 </div>
                 <div class="p-4">
                     <div class="subject-item py-3 flex items-center">
-                        <i class="fas fa-dna text-red-500 text-lg mr-3"></i>
+                        <i class="fas fa-atom text-purple-500 text-lg mr-3"></i>
                         <div>
-                            <p class="font-medium text-gray-900">Biologi</p>
-                            <p class="text-sm text-gray-600">07:00 - 08:30 | Bpk. Eko</p>
+                            <p class="font-medium text-gray-900">Fisika</p>
+                            <p class="text-sm text-gray-600">07:30 - 08:50 | Bpk. Asep Suratman, S.Pd.</p>
                         </div>
                     </div>
                     <div class="subject-item py-3 flex items-center">
-                        <i class="fas fa-landmark text-gray-500 text-lg mr-3"></i>
+                        <i class="fas fa-calculator text-blue-500 text-lg mr-3"></i>
                         <div>
-                            <p class="font-medium text-gray-900">Sejarah</p>
-                            <p class="text-sm text-gray-600">08:30 - 10:00 | Ibu. Fitri</p>
+                            <p class="font-medium text-gray-900">Matematika</p>
+                            <p class="text-sm text-gray-600">08:50 - 10:10 | Bpk. Bay Bagus Teguh I, M.Pd.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-flask text-yellow-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Kimia</p>
+                            <p class="text-sm text-gray-600">10:25 - 11:45 | Ibu. Hj. Nur Rosmanah, S.Pd.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-book-open text-green-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Bahasa Indonesia</p>
+                            <p class="text-sm text-gray-600">12:30 - 13:50 | Ibu. Dra. Nunung Haryati</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-gavel text-red-500 text-lg mr-3"></i> <div>
+                            <p class="font-medium text-gray-900">PKN</p>
+                            <p class="text-sm text-gray-600">13:50 - 15:10 | Ibu. Dra Drita Hartati</p>
                         </div>
                     </div>
                 </div>
@@ -111,17 +241,37 @@
                 </div>
                 <div class="p-4">
                     <div class="subject-item py-3 flex items-center">
-                        <i class="fas fa-globe-asia text-indigo-500 text-lg mr-3"></i>
+                        <i class="fas fa-running text-orange-500 text-lg mr-3"></i>
                         <div>
-                            <p class="font-medium text-gray-900">Geografi</p>
-                            <p class="text-sm text-gray-600">07:00 - 08:30 | Bpk. Gani</p>
+                            <p class="font-medium text-gray-900">PJOK</p>
+                            <p class="text-sm text-gray-600">07:30 - 09:30 | Bpk. Drs. Ucu Rudi Kusyadi K</p>
                         </div>
                     </div>
                     <div class="subject-item py-3 flex items-center">
-                        <i class="fas fa-chart-line text-teal-500 text-lg mr-3"></i>
+                        <i class="fas fa-language text-blue-500 text-lg mr-3"></i>
                         <div>
-                            <p class="font-medium text-gray-900">Ekonomi</p>
-                            <p class="text-sm text-gray-600">08:30 - 10:00 | Ibu. Hana</p>
+                            <p class="font-medium text-gray-900">Bahasa Sunda</p>
+                            <p class="text-sm text-gray-600">09:30 - 10:10 | Ibu. Iis Sulastri, S.Pd.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-calculator text-purple-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Matematika</p>
+                            <p class="text-sm text-gray-600">10:25 - 11:55 | Bpk. Bay Bagus Teguh I, M.Pd.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-atom text-green-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Fisika</p>
+                            <p class="text-sm text-gray-600">12:30 - 13:50 | Bpk. Asep Suratman, S.Pd.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-mosque text-indigo-500 text-lg mr-3"></i> <div>
+                            <p class="font-medium text-gray-900">PAI</p>
+                            <p class="text-sm text-gray-600">13:50 - 15:10 | Bpk. H. Tatang, S.Sos, S.Pdi.</p>
                         </div>
                     </div>
                 </div>
@@ -134,22 +284,113 @@
                 </div>
                 <div class="p-4">
                     <div class="subject-item py-3 flex items-center">
-                        <i class="fas fa-palette text-pink-500 text-lg mr-3"></i>
-                        <div>
-                            <p class="font-medium text-gray-900">Seni Budaya</p>
-                            <p class="text-sm text-gray-600">07:00 - 08:30 | Bpk. Indra</p>
+                        <i class="fas fa-lightbulb text-yellow-500 text-lg mr-3"></i> <div>
+                            <p class="font-medium text-gray-900">Prakarya</p>
+                            <p class="text-sm text-gray-600">08:00 - 09:20 | Ibu. Jeni Zhillullahi Reka Z, S.Si.</p>
                         </div>
                     </div>
                     <div class="subject-item py-3 flex items-center">
-                        <i class="fas fa-running text-orange-500 text-lg mr-3"></i>
+                        <i class="fas fa-comments text-teal-500 text-lg mr-3"></i> <div>
+                            <p class="font-medium text-gray-900">BP/BK</p>
+                            <p class="text-sm text-gray-600">09:20 - 10:00 | Ibu.Mira Haryani, S.Pd.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-mosque text-red-500 text-lg mr-3"></i> <div>
+                            <p class="font-medium text-gray-900">PAI</p>
+                            <p class="text-sm text-gray-600">10:20 - 11:00 | Bpk. H. Tatang, S.Sos, S.Pdi.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-laptop-code text-green-500 text-lg mr-3"></i>
                         <div>
-                            <p class="font-medium text-gray-900">Penjaskes</p>
-                            <p class="text-sm text-gray-600">08:30 - 10:00 | Ibu. Jihan</p>
+                            <p class="font-medium text-gray-900">Informatika</p>
+                            <p class="text-sm text-gray-600">11:00 - 13:40 | Bpk. Gumgum Rahayu Gumelar, S.Kom.</p>
+                        </div>
+                    </div>
+                    <div class="subject-item py-3 flex items-center">
+                        <i class="fas fa-calculator text-blue-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Matematika</p>
+                            <p class="text-sm text-gray-600">13:40 - 15:00 | Bpk. Bay Bagus Teguh I, M.Pd.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
     </div>
+
+    <div id="page-transition-overlay" class="page-transition-overlay"></div>
+
+    <script>
+        // Mendapatkan referensi elemen sidebar
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        /**
+         * Fungsi untuk membuka sidebar.
+         * Menghapus kelas 'translate-x-full' dan menambahkan 'translate-x-0' untuk menggeser sidebar masuk.
+         * Menampilkan overlay dan mengatur opasitasnya menjadi 100%.
+         */
+        function openSidebar() {
+            sidebarMenu.classList.remove('translate-x-full');
+            sidebarMenu.classList.add('translate-x-0');
+            sidebarOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                sidebarOverlay.classList.remove('opacity-0');
+                sidebarOverlay.classList.add('opacity-100');
+            }, 10); // Sedikit penundaan untuk transisi overlay
+        }
+
+        /**
+         * Fungsi untuk menutup sidebar.
+         * Menghapus kelas 'translate-x-0' dan menambahkan 'translate-x-full' untuk menggeser sidebar keluar.
+         * Mengatur opasitas overlay menjadi 0% dan menyembunyikannya setelah transisi selesai.
+         */
+        function closeSidebar() {
+            sidebarMenu.classList.remove('translate-x-0');
+            sidebarMenu.classList.add('translate-x-full');
+            sidebarOverlay.classList.remove('opacity-100');
+            sidebarOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                sidebarOverlay.classList.add('hidden');
+            }, 300); // Sesuaikan dengan durasi transisi CSS (0.3s)
+        }
+
+        // Event listener untuk membuka sidebar
+        openSidebarBtn.addEventListener('click', openSidebar);
+
+        // Event listener untuk menutup sidebar (tombol X)
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+
+        // Event listener untuk menutup sidebar (klik overlay)
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // --- JavaScript untuk Transisi Halaman (Disalin dari UI Profil) ---
+        const pageTransitionOverlay = document.getElementById('page-transition-overlay');
+
+        /**
+         * Fungsi untuk mereset overlay transisi halaman saat halaman dimuat atau diakses dari cache.
+         */
+        function resetPageTransitionOverlay() {
+            pageTransitionOverlay.classList.remove('slide-out-left');
+            pageTransitionOverlay.style.transform = 'translateX(-100%)'; // Sembunyikan overlay
+            pageTransitionOverlay.style.opacity = '0';
+            pageTransitionOverlay.style.pointerEvents = 'none';
+        }
+
+        // Pastikan overlay tersembunyi saat halaman dimuat pertama kali
+        window.addEventListener('load', resetPageTransitionOverlay);
+
+        // Pastikan overlay tersembunyi saat halaman diakses dari back/forward cache
+        window.addEventListener('pageshow', function(event) {
+            // event.persisted adalah true jika halaman dimuat dari bfcache
+            if (event.persisted) {
+                resetPageTransitionOverlay();
+            }
+        });
+    </script>
 </body>
 </html>
