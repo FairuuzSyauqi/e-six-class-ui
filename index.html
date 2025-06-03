@@ -87,6 +87,14 @@
             transform: translateY(0);
             opacity: 1;
         }
+
+        /* Animasi klik untuk tombol dan item menu */
+        button:active,
+        .popup-menu-item:active,
+        .sidebar nav ul li a:active {
+            transform: scale(0.98); /* Mengecil sedikit */
+            transition: transform 0.1s ease-out; /* Transisi cepat untuk efek "terdorong" */
+        }
     </style>
 </head>
 <body class="antialiased">
