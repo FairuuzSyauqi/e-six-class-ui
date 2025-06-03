@@ -3,189 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-SIX Eleven-Six Class</title>
+    <title>Profil Pengguna</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/phosphor-icons"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5; /* Warna latar belakang yang mirip dengan gambar */
+            background-color: #f0f2f5; /* Background color */
+        }
+        /* Custom gradient for the profile card */
+        .profile-card-gradient {
+            background: linear-gradient(to right, #4a90e2, #6a5acd);
+        }
+        /* Custom font size for smaller menu text */
+        .text-xxs {
+            font-size: 0.65rem; /* Custom font size, slightly smaller than text-xs */
+        }
+        /* Sidebar transition */
+        .sidebar {
+            transition: transform 0.3s ease-out;
+        }
+        /* Overlay transition */
+        .overlay {
+            transition: opacity 0.3s ease-out;
+        }
+        /* Pop-up menu styling */
+        .popup-menu {
+            position: absolute;
+            top: 0; /* Changed from 100% to 0 */
+            right: 0;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            min-width: 150px;
+            overflow: hidden;
+            transform: translateY(-100%); /* Move it up by its own height */
+        }
+        .popup-menu-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            color: #4a5568; /* gray-700 */
+            font-size: 0.875rem; /* text-sm */
+        }
+        .popup-menu-item:hover {
+            background-color: #f7fafc; /* gray-50 */
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
-    <div class="flex-grow p-4">
-        <header class="flex justify-between items-center mb-6">
-            <div>
-                <p class="text-xl font-bold text-gray-800">E-SIXVASCO</p>
-                <p class="text-md text-gray-600">XI-6 SMAN 3 KARAWANG</p>
+<body class="antialiased">
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden opacity-0 overlay"></div>
+
+    <div id="sidebar-menu" class="sidebar fixed top-0 right-0 w-64 h-full bg-white shadow-lg z-50 transform translate-x-full">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">Menu</h3>
+                <button id="close-sidebar" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
             </div>
-            <button class="text-gray-700 focus:outline-none">
-                <i class="ph ph-list text-3xl"></i>
-            </button>
-        </header>
-
-        <div class="bg-white rounded-2xl shadow-md p-6 mb-6 flex items-center space-x-4">
-            <img id="profilePic" src="https://via.placeholder.com/64" alt="Profil Pengguna"
-                 class="w-16 h-16 rounded-full border-2 border-blue-500 object-cover">
-            <div>
-                <p id="userName" class="text-xl font-semibold text-gray-800">Memuat Nama...</p>
-                <p id="userNumber" class="text-gray-600">Memuat Nomor...</p>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-3">Tanggal Hari Ini</h2>
-            <p id="currentDate" class="text-xl font-bold text-blue-600">Memuat Tanggal...</p>
-        </div>
-
-        <div class="mt-8 text-center">
-            <button id="logoutButton"
-                    class="bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-200">
-                Logout
-            </button>
+            <nav>
+                <ul>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-home mr-3"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-user mr-3"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-sign-out-alt mr-3"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
 
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    <div class="min-h-screen flex flex-col items-center py-4 px-4 sm:px-6 lg:px-8">
+        <header class="w-full max-w-md flex justify-between items-center mb-6">
+            <div class="text-gray-800">
+                <h1 class="text-lg font-semibold uppercase">E-Sixvasco</h1>
+                <p class="text-sm text-gray-600 uppercase">XII-6 SMAN 3 Karawang</p>
+            </div>
+            <button id="open-sidebar" class="text-gray-800 focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </header>
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyB1WGkj4_xk-DkUyW35DQi_OG4jh8P7kkI",
-  authDomain: "e-sixvasco.firebaseapp.com",
-  projectId: "e-sixvasco",
-  storageBucket: "e-sixvasco.firebasestorage.app",
-  messagingSenderId: "948517017927",
-  appId: "1:948517017927:web:f208dd498c5f6bbc2e5462",
-  measurementId: "G-5Q4D36EYYV"
-};
+        <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden mb-6 profile-card-gradient">
+            <div class="p-6 flex items-center text-white">
+                <div class="flex-shrink-0 w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center text-3xl font-bold mr-4 border-2 border-white">
+                    PP
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">Fairuuz Syauqi Hanif</h2>
+                    <p class="text-sm opacity-90">Kelas XII-6</p>
+                    <p class="text-xs mt-1 opacity-80">Absen : 14</p>
+                </div>
+            </div>
+        </div>
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+        <section class="w-full max-w-md mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">SALDO KAS</h2>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-start mb-4 relative">
+                    <div class="text-gray-600">
+                        <p class="text-sm">TOTAL SALDO KAS</p>
+                        <p class="text-4xl font-bold text-gray-800">Rp50.000</p>
+                    </div>
+                    <button id="open-popup-menu" class="text-gray-400 hover:text-gray-600 focus:outline-none mt-[-0.5rem]">
+                        <i class="fas fa-ellipsis-h text-xl"></i>
+                    </button>
 
-        const userName = document.getElementById('userName');
-        const userNumber = document.getElementById('userNumber');
-        const profilePic = document.getElementById('profilePic');
-        const currentDateElem = document.getElementById('currentDate');
-        const logoutButton = document.getElementById('logoutButton');
+                    <div id="saldo-popup-menu" class="popup-menu hidden">
+                        <div class="popup-menu-item" data-action="rekap-kamu">Rekap Saldo Kas Kamu</div>
+                        <div class="popup-menu-item" data-action="rekap-kelas">Rekap Saldo Kas Kelas</div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center border-t pt-4">
+                    <div class="text-gray-600">
+                        <p class="text-sm">TOTAL SALDO KAS KELAS</p>
+                    </div>
+                    <div class="flex items-center text-gray-800">
+                        <span class="text-xl font-bold">Rp50.000</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        let userLoginCode = null;
-        let authReady = false;
+        <section class="w-full max-w-md">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">MENU</h2>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <p class="text-sm text-gray-600 mb-4">PEMBELAJARAN</p>
+                <div class="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-gray-200">
+                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-calendar-alt text-2xl text-blue-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">JADWAL PEMBELAJARAN</span>
+                    </button>
+                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-book text-2xl text-red-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">MATERI PEMBELAJARAN</span>
+                    </button>
+                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-clipboard-list text-2xl text-green-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">TUGAS SEKOLAH</span>
+                    </button>
+                </div>
 
-        // Autentikasi anonim saat halaman dimuat
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log("Firebase authenticated anonymously with UID:", user.uid);
-                authReady = true;
-                // Cek kode login di localStorage dan muat profil
-                userLoginCode = localStorage.getItem('userLoginCode');
-                if (userLoginCode) {
-                    loadUserProfile(userLoginCode);
-                } else {
-                    // Jika tidak ada kode login, redirect ke halaman login
-                    console.log("No userLoginCode found in localStorage, redirecting to login.html");
-                    window.location.href = 'login.html';
-                }
-            } else {
-                console.log("Firebase not authenticated. Attempting anonymous sign-in.");
-                signInAnonymously(auth)
-                    .then(() => {
-                        console.log("Anonymous sign-in successful.");
-                        authReady = true;
-                        // Setelah sign-in anonim berhasil, coba muat profil lagi
-                        userLoginCode = localStorage.getItem('userLoginCode');
-                        if (userLoginCode) {
-                            loadUserProfile(userLoginCode);
-                        } else {
-                             // Jika tetap tidak ada kode login, redirect ke halaman login
-                            console.log("No userLoginCode after anonymous sign-in, redirecting to login.html");
-                            window.location.href = 'login.html';
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Anonymous sign-in failed:", error);
-                        // Jika sign-in anonim gagal, mungkin tidak bisa memuat data Firestore
-                        userName.textContent = 'Error Autentikasi';
-                        userNumber.textContent = 'Gagal terhubung.';
-                        profilePic.src = "https://via.placeholder.com/64";
-                        console.log("Redirecting to login.html due to auth error.");
-                        window.location.href = 'login.html'; // Redirect jika autentikasi gagal
-                    });
+                <p class="text-sm text-gray-600 mb-4 mt-6">KEBERSIHAN</p>
+                <div class="grid grid-cols-3 gap-4">
+                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-broom text-2xl text-blue-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">JADWAL PIKET</span>
+                    </button>
+                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-clock text-2xl text-red-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">PRESENSI PIKET</span>
+                    </button>
+                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-history text-2xl text-green-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">REKAP PIKET</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Mendapatkan referensi elemen sidebar
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        // Fungsi untuk membuka sidebar
+        function openSidebar() {
+            sidebarMenu.classList.remove('translate-x-full');
+            sidebarMenu.classList.add('translate-x-0');
+            sidebarOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                sidebarOverlay.classList.remove('opacity-0');
+                sidebarOverlay.classList.add('opacity-100');
+            }, 10);
+        }
+
+        // Fungsi untuk menutup sidebar
+        function closeSidebar() {
+            sidebarMenu.classList.remove('translate-x-0');
+            sidebarMenu.classList.add('translate-x-full');
+            sidebarOverlay.classList.remove('opacity-100');
+            sidebarOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                sidebarOverlay.classList.add('hidden');
+            }, 300); // Sesuaikan dengan durasi transisi CSS
+        }
+
+        // Event listener untuk membuka sidebar
+        openSidebarBtn.addEventListener('click', openSidebar);
+
+        // Event listener untuk menutup sidebar (tombol X)
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+
+        // Event listener untuk menutup sidebar (klik overlay)
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // --- JavaScript untuk Pop-up Menu Saldo Kas ---
+        const openPopupMenuBtn = document.getElementById('open-popup-menu');
+        const saldoPopupMenu = document.getElementById('saldo-popup-menu');
+
+        // Fungsi untuk membuka/menutup pop-up menu
+        function togglePopupMenu() {
+            saldoPopupMenu.classList.toggle('hidden');
+        }
+
+        // Event listener untuk membuka/menutup pop-up saat ikon titik tiga diklik
+        openPopupMenuBtn.addEventListener('click', function(event) {
+            event.stopPropagation(); // Mencegah event klik menyebar ke document
+            togglePopupMenu();
+        });
+
+        // Event listener untuk menutup pop-up saat mengklik di luar pop-up
+        document.addEventListener('click', function(event) {
+            if (!saldoPopupMenu.classList.contains('hidden') && !saldoPopupMenu.contains(event.target) && event.target !== openPopupMenuBtn) {
+                saldoPopupMenu.classList.add('hidden');
             }
         });
 
-
-        // Fungsi untuk menampilkan tanggal saat ini
-        const displayCurrentDate = () => {
-            const today = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            currentDateElem.textContent = today.toLocaleDateString('id-ID', options);
-        };
-
-        // Fungsi untuk memuat data profil dari Firestore
-        const loadUserProfile = async (code) => {
-            if (!authReady) {
-                console.warn("Auth not ready yet, cannot load profile.");
-                // Jika auth belum siap, mungkin perlu menunggu atau mencoba lagi
-                userName.textContent = 'Memuat Nama...';
-                userNumber.textContent = 'Memuat Nomor...';
-                return;
+        // Event listener untuk setiap item di pop-up menu (opsional, untuk aksi)
+        saldoPopupMenu.addEventListener('click', function(event) {
+            const action = event.target.dataset.action;
+            if (action) {
+                alert(`Anda mengklik: ${event.target.textContent}`); // Ganti dengan logika yang sesuai
+                saldoPopupMenu.classList.add('hidden'); // Tutup pop-up setelah klik
             }
-
-            const userDocRef = doc(db, `artifacts/${appId}/public/users_data`, code);
-            try {
-                const docSnap = await getDoc(userDocRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    userName.textContent = data.name || 'Nama Tidak Ditemukan';
-                    userNumber.textContent = data.number || 'Nomor Tidak Ditemukan';
-                    if (data.profileImageURL) { // Gunakan profileImageURL jika ada
-                        profilePic.src = data.profileImageURL;
-                    } else {
-                        profilePic.src = "https://via.placeholder.com/64"; // Default jika tidak ada gambar
-                    }
-                } else {
-                    console.log("No user data found for code:", code);
-                    userName.textContent = 'Pengguna Tidak Dikenal';
-                    userNumber.textContent = '';
-                    profilePic.src = "https://via.placeholder.com/64"; // Default jika dokumen tidak ada
-                    // Opsional: Redirect kembali ke login jika kode tidak ditemukan
-                    console.log("No user data, redirecting to login.html");
-                    localStorage.removeItem('userLoginCode'); // Hapus kode yang mungkin invalid
-                    window.location.href = 'login.html';
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-                userName.textContent = 'Error Memuat Nama';
-                userNumber.textContent = 'Error Memuat Nomor';
-                profilePic.src = "https://via.placeholder.com/64"; // Default jika ada error
-                console.log("Redirecting to login.html due to data fetch error.");
-                localStorage.removeItem('userLoginCode'); // Hapus kode yang mungkin invalid
-                window.location.href = 'login.html'; // Redirect jika ada error saat memuat data
-            }
-        };
-
-        // Panggil fungsi untuk menampilkan tanggal saat halaman dimuat
-        displayCurrentDate();
-
-        // Event listener untuk tombol logout
-        logoutButton.addEventListener('click', () => {
-            localStorage.removeItem('userLoginCode'); // Hapus kode dari localStorage
-            // Opsional: signOut(auth) jika ingin membersihkan sesi Firebase Auth
-            // signOut(auth).then(() => {
-            //     console.log("User signed out from Firebase Auth.");
-            // }).catch((error) => {
-            //     console.error("Error signing out:", error);
-            // });
-            window.location.href = 'login.html'; // Redirect ke halaman login
         });
     </script>
 </body>
