@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Pengguna</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -94,6 +95,7 @@
         #open-popup-menu:active, /* Tombol ellipsis pop-up */
         #modal-close-btn:active, /* Tombol OK modal */
         #btn-jadwal-pembelajaran:active, /* Tombol jadwal pembelajaran */
+        #btn-jadwal-piket:active, /* Tombol jadwal piket yang baru ditambahkan */
         .grid.grid-cols-3 button:active, /* Semua tombol dalam grid menu */
         .popup-menu-item:active,
         .sidebar nav ul li a:active {
@@ -240,7 +242,8 @@
 
                 <p class="text-sm text-gray-600 mb-4 mt-6">KEBERSIHAN</p>
                 <div class="grid grid-cols-3 gap-4">
-                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                    <!-- Tombol JADWAL PIKET dengan ID baru -->
+                    <button id="btn-jadwal-piket" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
                         <i class="fas fa-broom text-2xl text-blue-500 mb-2"></i>
                         <span class="text-xxs text-gray-700 text-center">JADWAL PIKET</span>
                     </button>
@@ -401,6 +404,36 @@
         // Event listener untuk tombol "JADWAL PEMBELAJARAN"
         if (btnJadwalPembelajaran) {
             btnJadwalPembelajaran.addEventListener('click', goToJadwalPembelajaranWithAnimation);
+        }
+
+        // --- JavaScript baru untuk Navigasi Halaman Jadwal Piket dengan Animasi ---
+        const btnJadwalPiket = document.getElementById('btn-jadwal-piket');
+
+        /**
+         * Fungsi untuk mengarahkan pengguna ke halaman jadwal piket dengan animasi.
+         */
+        function goToJadwalPiketWithAnimation() {
+            // Pastikan overlay di posisi awal dan terlihat
+            pageTransitionOverlay.classList.remove('slide-out-left');
+            pageTransitionOverlay.style.transform = 'translateX(0)';
+            pageTransitionOverlay.style.opacity = '1';
+            pageTransitionOverlay.style.pointerEvents = 'auto';
+
+            // Beri sedikit waktu agar browser merender posisi awal sebelum memulai transisi
+            setTimeout(() => {
+                // Mulai animasi geser keluar
+                pageTransitionOverlay.classList.add('slide-out-left');
+            }, 10); // Penundaan sangat singkat
+
+            // Setelah animasi selesai, baru navigasi ke halaman baru
+            setTimeout(() => {
+                window.location.href = 'jadwal-piket.html'; // Ini adalah nama file halaman jadwal piket Anda
+            }, 500); // Sesuaikan dengan durasi transisi CSS (0.5s)
+        }
+
+        // Event listener untuk tombol "JADWAL PIKET"
+        if (btnJadwalPiket) {
+            btnJadwalPiket.addEventListener('click', goToJadwalPiketWithAnimation);
         }
 
         /**

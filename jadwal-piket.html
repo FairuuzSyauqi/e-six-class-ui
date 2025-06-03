@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Piket</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e2e8f0; /* Warna latar belakang yang lembut, konsisten dengan jadwal pembelajaran */
+        }
+        .card-gradient-header {
+            background: linear-gradient(to right, #6366f1, #8b5cf6); /* Gradient ungu-biru, konsisten */
+        }
+        .duty-item:not(:last-child) {
+            border-bottom: 1px solid #e5e7eb; /* Garis pemisah antar item piket */
+        }
+
+        /* Gaya Sidebar (Disalin dari UI Jadwal Pembelajaran) */
+        .sidebar {
+            transition: transform 0.3s ease-out;
+        }
+        .overlay {
+            transition: opacity 0.3s ease-out;
+        }
+        .text-xxs {
+            font-size: 0.65rem; /* Ukuran font kustom, sedikit lebih kecil dari text-xs */
+        }
+
+        /* Animasi klik untuk tombol dan item menu (Disalin dari UI Jadwal Pembelajaran) */
+        #open-sidebar:active, /* Tombol hamburger menu */
+        #close-sidebar:active, /* Tombol close sidebar */
+        .sidebar nav ul li a:active, /* Link di sidebar */
+        button:active { /* Semua tombol lain */
+            transform: scale(0.98); /* Mengecil sedikit */
+            transition: transform 0.1s ease-out; /* Transisi cepat untuk efek "terdorong" */
+        }
+
+        /* Gaya untuk overlay transisi halaman (Disalin dari UI Jadwal Pembelajaran) */
+        .page-transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #e2e8f0; /* Sesuaikan dengan warna latar belakang body halaman ini */
+            z-index: 9999; /* Pastikan di atas semua elemen lain */
+            transform: translateX(0); /* Posisi awal, menutupi layar */
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out; /* Animasi geser dan opacity */
+            opacity: 1; /* Awalnya terlihat */
+            pointer-events: auto; /* Menerima klik */
+        }
+        .page-transition-overlay.slide-out-left {
+            transform: translateX(-100%); /* Geser ke kiri */
+            opacity: 0; /* Memudar saat bergeser */
+            pointer-events: none; /* Tidak menerima klik setelah bergeser */
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Overlay untuk sidebar -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden opacity-0 overlay"></div>
+
+    <!-- Sidebar Menu -->
+    <div id="sidebar-menu" class="sidebar fixed top-0 right-0 w-64 h-full bg-white shadow-lg z-50 transform translate-x-full">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">Menu</h3>
+                <button id="close-sidebar" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <nav>
+                <ul>
+                    <li class="mb-2">
+                        <a href="index.html" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-home mr-3"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-user mr-3"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-sign-out-alt mr-3"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <div class="min-h-screen flex flex-col items-center py-4 px-4 sm:px-6 lg:px-8">
+        <header class="w-full max-w-md flex justify-between items-center mb-8">
+            <div class="text-gray-800">
+                <h1 class="text-xl font-extrabold uppercase text-gray-900">JADWAL PIKET</h1>
+                <p class="text-sm text-gray-600 uppercase">XII-6 SMAN 3 KARAWANG</p>
+            </div>
+            <button id="open-sidebar" class="text-gray-800 focus:outline-none p-2 rounded-full hover:bg-gray-200 transition-colors">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </header>
+
+        <section class="w-full max-w-md space-y-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Daftar Piket Kelas XII-6</h3>
+
+            <!-- Jadwal Piket Senin -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-[1.01]">
+                <div class="card-gradient-header text-white p-4 flex justify-between items-center rounded-t-xl">
+                    <h4 class="text-lg font-bold">Senin</h4>
+                    <i class="fas fa-calendar-day text-xl"></i>
+                </div>
+                <div class="p-4">
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-blue-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Siti Aisyah</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-green-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Gabrinaia Althafunnisa Azzahra</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-red-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Ina Azhara</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-purple-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Mochammad Chiryl Al Kahfy</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-yellow-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Riza Nurfaiz</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-teal-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Syalwa Cahaya Galih Pratiwi</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-indigo-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Yosua Christianto</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jadwal Piket Selasa -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-[1.01]">
+                <div class="card-gradient-header text-white p-4 flex justify-between items-center rounded-t-xl">
+                    <h4 class="text-lg font-bold">Selasa</h4>
+                    <i class="fas fa-calendar-day text-xl"></i>
+                </div>
+                <div class="p-4">
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-blue-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Keisya Alfianka Aprilianto</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-green-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Anastasia Rizkia Amanda</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-red-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Ayudhya Harunnisa</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-purple-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Fairuuz Syauqi Hanif</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-yellow-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Mochammad Anjasmara</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-teal-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Riffat Hail Akbar</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-indigo-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Vina Julyani</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jadwal Piket Rabu -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-[1.01]">
+                <div class="card-gradient-header text-white p-4 flex justify-between items-center rounded-t-xl">
+                    <h4 class="text-lg font-bold">Rabu</h4>
+                    <i class="fas fa-calendar-day text-xl"></i>
+                </div>
+                <div class="p-4">
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-blue-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Lifiya Andiyani</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-green-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Aufa Aziz Syakura</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-red-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Deviana Maharani Putri</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-purple-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Dzurotun Qurrota Ayun</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-yellow-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Chika Auliana</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-teal-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Restu Fayza Fahmi</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-indigo-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Shafira Putri Bastian</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jadwal Piket Kamis -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-[1.01]">
+                <div class="card-gradient-header text-white p-4 flex justify-between items-center rounded-t-xl">
+                    <h4 class="text-lg font-bold">Kamis</h4>
+                    <i class="fas fa-calendar-day text-xl"></i>
+                </div>
+                <div class="p-4">
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-blue-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Fahri Maulana</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-green-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Alwan Hanun Mifzal Fauzi</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-red-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Denisha Lauraika Salsabillaa Apandi</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-purple-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Galih Aprilyan Wibowo</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-yellow-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Muhammad Rizqi Ramadhan</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-teal-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Sarah Alya Khanza</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-indigo-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Sharliz Tanisha Ahyan AS</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-orange-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Qurrotaainiriyatna</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Jadwal Piket Jumat -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-[1.01]">
+                <div class="card-gradient-header text-white p-4 flex justify-between items-center rounded-t-xl">
+                    <h4 class="text-lg font-bold">Jumat</h4>
+                    <i class="fas fa-calendar-day text-xl"></i>
+                </div>
+                <div class="p-4">
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-blue-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Aulia Reka Putri</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-green-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Adhya Khanza</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-red-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Athallah Rasya Khairan</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-purple-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Chayra Dilla Fermuti</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-yellow-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Farhan Saputra</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-teal-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Muhamad Rifat</p>
+                        </div>
+                    </div>
+                    <div class="duty-item py-3 flex items-center">
+                        <i class="fas fa-user-circle text-indigo-500 text-lg mr-3"></i>
+                        <div>
+                            <p class="font-medium text-gray-900">Rikeu Dwi Putri</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Overlay Transisi Halaman -->
+    <div id="page-transition-overlay" class="page-transition-overlay"></div>
+
+    <script>
+        // Mendapatkan referensi elemen sidebar
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        /**
+         * Fungsi untuk membuka sidebar.
+         * Menghapus kelas 'translate-x-full' dan menambahkan 'translate-x-0' untuk menggeser sidebar masuk.
+         * Menampilkan overlay dan mengatur opasitasnya menjadi 100%.
+         */
+        function openSidebar() {
+            sidebarMenu.classList.remove('translate-x-full');
+            sidebarMenu.classList.add('translate-x-0');
+            sidebarOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                sidebarOverlay.classList.remove('opacity-0');
+                sidebarOverlay.classList.add('opacity-100');
+            }, 10); // Sedikit penundaan untuk transisi overlay
+        }
+
+        /**
+         * Fungsi untuk menutup sidebar.
+         * Menghapus kelas 'translate-x-0' dan menambahkan 'translate-x-full' untuk menggeser sidebar keluar.
+         * Mengatur opasitas overlay menjadi 0% dan menyembunyikannya setelah transisi selesai.
+         */
+        function closeSidebar() {
+            sidebarMenu.classList.remove('translate-x-0');
+            sidebarMenu.classList.add('translate-x-full');
+            sidebarOverlay.classList.remove('opacity-100');
+            sidebarOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                sidebarOverlay.classList.add('hidden');
+            }, 300); // Sesuaikan dengan durasi transisi CSS (0.3s)
+        }
+
+        // Event listener untuk membuka sidebar
+        openSidebarBtn.addEventListener('click', openSidebar);
+
+        // Event listener untuk menutup sidebar (tombol X)
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+
+        // Event listener untuk menutup sidebar (klik overlay)
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // --- JavaScript untuk Transisi Halaman (Disalin dari UI Jadwal Pembelajaran) ---
+        const pageTransitionOverlay = document.getElementById('page-transition-overlay');
+
+        /**
+         * Fungsi untuk mereset overlay transisi halaman saat halaman dimuat atau diakses dari cache.
+         */
+        function resetPageTransitionOverlay() {
+            pageTransitionOverlay.classList.remove('slide-out-left');
+            pageTransitionOverlay.style.transform = 'translateX(-100%)'; // Sembunyikan overlay
+            pageTransitionOverlay.style.opacity = '0';
+            pageTransitionOverlay.style.pointerEvents = 'none';
+        }
+
+        // Pastikan overlay tersembunyi saat halaman dimuat pertama kali
+        window.addEventListener('load', resetPageTransitionOverlay);
+
+        // Pastikan overlay tersembunyi saat halaman diakses dari back/forward cache
+        window.addEventListener('pageshow', function(event) {
+            // event.persisted adalah true jika halaman dimuat dari bfcache
+            if (event.persisted) {
+                resetPageTransitionOverlay();
+            }
+        });
+    </script>
+</body>
+</html>
