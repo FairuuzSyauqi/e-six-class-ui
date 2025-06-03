@@ -403,12 +403,25 @@
             btnJadwalPembelajaran.addEventListener('click', goToJadwalPembelajaranWithAnimation);
         }
 
-        // Pastikan overlay tersembunyi saat halaman dimuat pertama kali
-        window.addEventListener('load', () => {
+        /**
+         * Fungsi untuk mereset overlay transisi halaman saat halaman dimuat atau diakses dari cache.
+         */
+        function resetPageTransitionOverlay() {
             pageTransitionOverlay.classList.remove('slide-out-left');
             pageTransitionOverlay.style.transform = 'translateX(-100%)'; // Sembunyikan overlay
             pageTransitionOverlay.style.opacity = '0';
             pageTransitionOverlay.style.pointerEvents = 'none';
+        }
+
+        // Pastikan overlay tersembunyi saat halaman dimuat pertama kali
+        window.addEventListener('load', resetPageTransitionOverlay);
+
+        // Pastikan overlay tersembunyi saat halaman diakses dari back/forward cache
+        window.addEventListener('pageshow', function(event) {
+            // event.persisted adalah true jika halaman dimuat dari bfcache
+            if (event.persisted) {
+                resetPageTransitionOverlay();
+            }
         });
     </script>
 </body>
