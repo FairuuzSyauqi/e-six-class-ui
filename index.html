@@ -112,10 +112,10 @@
     </div>
 
     <script type="module">
-        // Firebase imports (still included for context, but not directly used for login simulation)
+        // Firebase imports for Auth and Firestore
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; // Uncomment if you need Firestore
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Initialization (using global variables provided by Canvas) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -123,14 +123,14 @@
 
         let app;
         let auth;
-        // let db; // Uncomment if you need Firestore
+        let db; // Firestore instance
 
         async function initFirebase() {
             try {
                 if (Object.keys(firebaseConfig).length > 0) {
                     app = initializeApp(firebaseConfig);
                     auth = getAuth(app);
-                    // db = getFirestore(app); // Uncomment if you need Firestore
+                    db = getFirestore(app); // Initialize Firestore
 
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
@@ -182,34 +182,6 @@
             this.querySelector('i').classList.toggle('fa-eye-slash');
         });
 
-        // --- Simulated User Data (Ini adalah "database" sementara) ---
-        const users = [
-            {
-                username: "fairuuz",
-                password: "password123",
-                name: "Fairuuz Syauqi Hanif",
-                attendance: "14"
-            },
-            {
-                username: "budi",
-                password: "password456",
-                name: "Budi Santoso",
-                attendance: "05"
-            },
-            {
-                username: "ani",
-                password: "password789",
-                name: "Ani Suryani",
-                attendance: "02"
-            },
-            {
-                username: "daviant",
-                password: "ganteng",
-                name: "Daviant Dascha Arfhiansyah",
-                attendance: "03"
-            }
-        ];
-
         // --- JavaScript for Login Form Submission ---
         const loginForm = document.getElementById('login-form');
 
@@ -224,24 +196,44 @@
                 return;
             }
 
-            // Cari pengguna yang cocok di array data
-            const foundUser = users.find(user => user.username === username && user.password === password);
+            if (!db) {
+                showModal("Layanan database tidak tersedia. Coba lagi nanti.");
+                return;
+            }
 
-            if (foundUser) {
-                // Login berhasil
-                console.log('Login berhasil untuk:', foundUser.name);
-                // Simpan data pengguna ke sessionStorage
-                sessionStorage.setItem('loggedInUser', JSON.stringify(foundUser));
-                showModal('Login berhasil! Mengalihkan ke halaman profil...');
-                loginForm.reset();
+            try {
+                // Construct the full path to the 'users' collection
+                const usersCollectionRef = collection(db, `artifacts/${appId}/public/data/users`);
+                
+                // Create a query to find the user by username
+                const q = query(usersCollectionRef, where("username", "==", username));
+                const querySnapshot = await getDocs(q);
 
-                // Redirect ke halaman profil setelah jeda singkat
-                setTimeout(() => {
-                    window.location.href = 'profile.html'; // Nama file halaman profil Anda
-                }, 1500); // Redirect setelah 1.5 detik
-            } else {
-                // Login gagal
-                showModal('Username atau Kata Sandi salah. Silakan coba lagi.');
+                if (querySnapshot.empty) {
+                    showModal('Username atau Kata Sandi salah. Silakan coba lagi.');
+                    return;
+                }
+
+                // Assuming username is unique, there should only be one result
+                const userData = querySnapshot.docs[0].data();
+
+                // For demo: verify password. In a real app, Firebase Auth handles this securely.
+                if (userData.password === password) {
+                    console.log('Login berhasil untuk:', userData.name);
+                    sessionStorage.setItem('loggedInUser', JSON.stringify(userData));
+                    showModal('Login berhasil! Mengalihkan ke halaman profil...');
+                    loginForm.reset();
+
+                    setTimeout(() => {
+                        window.location.href = 'profile.html';
+                    }, 1500);
+                } else {
+                    showModal('Username atau Kata Sandi salah. Silakan coba lagi.');
+                }
+
+            } catch (error) {
+                console.error("Error during login:", error);
+                showModal("Terjadi kesalahan saat mencoba masuk. Silakan coba lagi.");
             }
         });
     </script>

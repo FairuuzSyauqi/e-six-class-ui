@@ -261,7 +261,45 @@
 
     <div id="page-transition-overlay" class="page-transition-overlay"></div>
 
-    <script>
+    <script type="module">
+        // Firebase imports for Auth and Firestore
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Firebase Initialization (using global variables provided by Canvas) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+        let app;
+        let auth;
+        let db; // Firestore instance
+
+        async function initFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length > 0) {
+                    app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app); // Initialize Firestore
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                        console.log('Signed in with custom token!');
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log('Signed in anonymously!');
+                    }
+                } else {
+                    console.warn("Firebase config not found. Running without Firebase.");
+                }
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                // No modal here, as it might block the initial profile load if Firebase fails
+            }
+        }
+
+        initFirebase(); // Initialize Firebase when the script loads
+
         // --- JavaScript untuk Modal Kustom ---
         const customModal = document.getElementById('custom-modal');
         const modalMessage = document.getElementById('modal-message');
@@ -402,15 +440,14 @@
         const logoutBtn = document.getElementById('logout-btn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', function(event) {
-                event.preventDefault(); // Mencegah navigasi default
-                sessionStorage.removeItem('loggedInUser'); // Hapus data pengguna dari sessionStorage
+                event.preventDefault(); // Prevent default navigation
+                sessionStorage.removeItem('loggedInUser'); // Clear user data from sessionStorage
                 showModal('Anda telah keluar. Mengalihkan ke halaman login...');
                 setTimeout(() => {
-                    window.location.href = 'index.html'; // Arahkan kembali ke halaman login
+                    window.location.href = 'index.html'; // Redirect back to the login page
                 }, 1500);
             });
         }
-
 
         function resetPageTransitionOverlay() {
             pageTransitionOverlay.classList.remove('slide-out-left');
