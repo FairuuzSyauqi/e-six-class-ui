@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Pengguna</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Background color */
+        }
+        /* Custom gradient for the profile card */
+        .profile-card-gradient {
+            background: linear-gradient(to right, #4a90e2, #6a5acd);
+        }
+        /* Custom font size for smaller menu text */
+        .text-xxs {
+            font-size: 0.65rem; /* Custom font size, slightly smaller than text-xs */
+        }
+        /* Sidebar transition */
+        .sidebar {
+            transition: transform 0.3s ease-out;
+        }
+        /* Overlay transition */
+        .overlay {
+            transition: opacity 0.3s ease-out;
+        }
+        /* Pop-up menu styling */
+        .popup-menu {
+            position: absolute;
+            top: 0; /* Changed from 100% to 0 */
+            right: 0;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            min-width: 150px;
+            overflow: hidden;
+            transform: translateY(-100%); /* Move it up by its own height */
+        }
+        .popup-menu-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            color: #4a5568; /* gray-700 */
+            font-size: 0.875rem; /* text-sm */
+        }
+        .popup-menu-item:hover {
+            background-color: #f7fafc; /* gray-50 */
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            width: 350px;
+            text-align: center;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Animasi klik untuk tombol dan item menu */
+        #open-sidebar:active, /* Tombol hamburger menu */
+        #close-sidebar:active, /* Tombol close sidebar */
+        #open-popup-menu:active, /* Tombol ellipsis pop-up */
+        #modal-close-btn:active, /* Tombol OK modal */
+        #btn-jadwal-pembelajaran:active, /* Tombol jadwal pembelajaran */
+        #btn-jadwal-piket:active, /* Tombol jadwal piket yang baru ditambahkan */
+        .grid.grid-cols-3 button:active, /* Semua tombol dalam grid menu */
+        .popup-menu-item:active,
+        .sidebar nav ul li a:active {
+            transform: scale(0.98); /* Mengecil sedikit */
+            transition: transform 0.1s ease-out; /* Transisi cepat untuk efek "terdorong" */
+        }
+
+        /* Gaya untuk overlay transisi halaman */
+        .page-transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f2f5; /* Sesuaikan dengan warna latar belakang body atau halaman tujuan */
+            z-index: 9999; /* Pastikan di atas semua elemen lain */
+            transform: translateX(0); /* Posisi awal, menutupi layar */
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out; /* Animasi geser dan opacity */
+            opacity: 1; /* Awalnya terlihat */
+            pointer-events: auto; /* Menerima klik */
+        }
+        .page-transition-overlay.slide-out-left {
+            transform: translateX(-100%); /* Geser ke kiri */
+            opacity: 0; /* Memudar saat bergeser */
+            pointer-events: none; /* Tidak menerima klik setelah bergeser */
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden opacity-0 overlay"></div>
+
+    <div id="sidebar-menu" class="sidebar fixed top-0 right-0 w-64 h-full bg-white shadow-lg z-50 transform translate-x-full">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">Menu</h3>
+                <button id="close-sidebar" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <nav>
+                <ul>
+                    <li class="mb-2">
+                        <a href="profile.html" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-home mr-3"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="profile.html" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-user mr-3"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="index.html" id="logout-btn" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                            <i class="fas fa-sign-out-alt mr-3"></i>
+                            <span>Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-content">
+            <p id="modal-message" class="text-lg text-gray-800 mb-4"></p>
+            <button id="modal-close-btn" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <div class="min-h-screen flex flex-col items-center py-4 px-4 sm:px-6 lg:px-8">
+        <header class="w-full max-w-md flex justify-between items-center mb-6">
+            <div class="text-gray-800">
+                <h1 class="text-lg font-semibold uppercase">E-Sixvasco</h1>
+                <p class="text-sm text-gray-600 uppercase">XII-6 SMAN 3 Karawang</p>
+            </div>
+            <button id="open-sidebar" class="text-gray-800 focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </header>
+
+        <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden mb-6 profile-card-gradient">
+            <div class="p-6 flex items-center text-white">
+                <div class="flex-shrink-0 w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center text-3xl font-bold mr-4 border-2 border-white">
+                    <span id="profile-initials">PP</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold" id="profile-name">Fairuuz Syauqi Hanif</h2>
+                    <p class="text-sm opacity-90">Kelas XII-6</p>
+                    <p class="text-xs mt-1 opacity-80" id="profile-attendance">Absen : 14</p>
+                </div>
+            </div>
+        </div>
+
+        <section class="w-full max-w-md mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">SALDO KAS</h2>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-start mb-4 relative">
+                    <div class="text-gray-600">
+                        <p class="text-sm">TOTAL SALDO KAS</p>
+                        <p class="text-4xl font-bold text-gray-800">Rp50.000</p>
+                    </div>
+                    <button id="open-popup-menu" class="text-gray-400 hover:text-gray-600 focus:outline-none mt-[-0.5rem]">
+                        <i class="fas fa-ellipsis-h text-xl"></i>
+                    </button>
+
+                    <div id="saldo-popup-menu" class="popup-menu hidden">
+                        <div class="popup-menu-item" data-action="rekap-kamu">Rekap Saldo Kas Kamu</div>
+                        <div class="popup-menu-item" data-action="rekap-kelas">Rekap Saldo Kas Kelas</div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center border-t pt-4">
+                    <div class="text-gray-600">
+                        <p class="text-sm">TOTAL SALDO KAS KELAS</p>
+                    </div>
+                    <div class="flex items-center text-gray-800">
+                        <span class="text-xl font-bold">Rp50.000</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="w-full max-w-md">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">MENU</h2>
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <p class="text-sm text-gray-600 mb-4">PEMBELAJARAN</p>
+                <div class="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-gray-200">
+                    <button id="btn-jadwal-pembelajaran" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-calendar-alt text-2xl text-blue-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">JADWAL PEMBELAJARAN</span>
+                    </button>
+                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-book text-2xl text-red-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">MATERI PEMBELAJARAN</span>
+                    </button>
+                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-clipboard-list text-2xl text-green-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">TUGAS SEKOLAH</span>
+                    </button>
+                </div>
+
+                <p class="text-sm text-gray-600 mb-4 mt-6">KEBERSIHAN</p>
+                <div class="grid grid-cols-3 gap-4">
+                    <button id="btn-jadwal-piket" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-broom text-2xl text-blue-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">JADWAL PIKET</span>
+                    </button>
+                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-clock text-2xl text-red-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">PRESENSI PIKET</span>
+                    </button>
+                    <button class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-history text-2xl text-green-500 mb-2"></i>
+                        <span class="text-xxs text-gray-700 text-center">REKAP PIKET</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="page-transition-overlay" class="page-transition-overlay"></div>
+
+    <script>
+        // --- JavaScript untuk Modal Kustom ---
+        const customModal = document.getElementById('custom-modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        function showModal(message) {
+            modalMessage.textContent = message;
+            customModal.classList.add('show');
+        }
+
+        function hideModal() {
+            customModal.classList.remove('show');
+        }
+
+        modalCloseBtn.addEventListener('click', hideModal);
+        customModal.addEventListener('click', function(event) {
+            if (event.target === customModal) {
+                hideModal();
+            }
+        });
+
+        // --- Logika pemuatan profil pengguna ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+
+            if (loggedInUser) {
+                // Perbarui elemen HTML dengan data pengguna yang login
+                document.getElementById('profile-name').textContent = loggedInUser.name;
+                document.getElementById('profile-attendance').textContent = `Absen : ${loggedInUser.attendance}`;
+                // Set inisial untuk gambar profil lingkaran
+                const nameParts = loggedInUser.name.split(' ');
+                let initials = '';
+                if (nameParts.length > 0) {
+                    initials += nameParts[0].charAt(0).toUpperCase();
+                }
+                if (nameParts.length > 1) {
+                    initials += nameParts[nameParts.length - 1].charAt(0).toUpperCase();
+                }
+                document.getElementById('profile-initials').textContent = initials || 'PP';
+
+            } else {
+                // Jika tidak ada data pengguna, arahkan kembali ke halaman login
+                showModal('Anda tidak login. Mengalihkan kembali ke halaman login...');
+                setTimeout(() => {
+                    window.location.href = 'index.html'; // Sesuaikan dengan nama file login Anda
+                }, 1500);
+            }
+        });
+
+        // --- JavaScript untuk Sidebar ---
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        function openSidebar() {
+            sidebarMenu.classList.remove('translate-x-full');
+            sidebarMenu.classList.add('translate-x-0');
+            sidebarOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                sidebarOverlay.classList.remove('opacity-0');
+                sidebarOverlay.classList.add('opacity-100');
+            }, 10);
+        }
+
+        function closeSidebar() {
+            sidebarMenu.classList.remove('translate-x-0');
+            sidebarMenu.classList.add('translate-x-full');
+            sidebarOverlay.classList.remove('opacity-100');
+            sidebarOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                sidebarOverlay.classList.add('hidden');
+            }, 300);
+        }
+
+        openSidebarBtn.addEventListener('click', openSidebar);
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // --- JavaScript untuk Pop-up Menu Saldo Kas ---
+        const openPopupMenuBtn = document.getElementById('open-popup-menu');
+        const saldoPopupMenu = document.getElementById('saldo-popup-menu');
+
+        function togglePopupMenu() {
+            saldoPopupMenu.classList.toggle('hidden');
+        }
+
+        openPopupMenuBtn.addEventListener('click', function(event) {
+            event.stopPropagation();
+            togglePopupMenu();
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!saldoPopupMenu.classList.contains('hidden') && !saldoPopupMenu.contains(event.target) && event.target !== openPopupMenuBtn) {
+                saldoPopupMenu.classList.add('hidden');
+            }
+        });
+
+        saldoPopupMenu.addEventListener('click', function(event) {
+            const action = event.target.dataset.action;
+            if (action) {
+                showModal(`Anda mengklik: ${event.target.textContent}`);
+                saldoPopupMenu.classList.add('hidden');
+            }
+        });
+
+        // --- JavaScript untuk Navigasi Halaman dengan Animasi ---
+        const pageTransitionOverlay = document.getElementById('page-transition-overlay');
+
+        function goToPageWithAnimation(url) {
+            pageTransitionOverlay.classList.remove('slide-out-left');
+            pageTransitionOverlay.style.transform = 'translateX(0)';
+            pageTransitionOverlay.style.opacity = '1';
+            pageTransitionOverlay.style.pointerEvents = 'auto';
+
+            setTimeout(() => {
+                pageTransitionOverlay.classList.add('slide-out-left');
+            }, 10);
+
+            setTimeout(() => {
+                window.location.href = url;
+            }, 500);
+        }
+
+        // Event listener untuk tombol "JADWAL PEMBELAJARAN"
+        const btnJadwalPembelajaran = document.getElementById('btn-jadwal-pembelajaran');
+        if (btnJadwalPembelajaran) {
+            btnJadwalPembelajaran.addEventListener('click', () => goToPageWithAnimation('jadwal-pembelajaran.html'));
+        }
+
+        // Event listener untuk tombol "JADWAL PIKET"
+        const btnJadwalPiket = document.getElementById('btn-jadwal-piket');
+        if (btnJadwalPiket) {
+            btnJadwalPiket.addEventListener('click', () => goToPageWithAnimation('jadwal-piket.html'));
+        }
+
+        // --- Logout functionality ---
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(event) {
+                event.preventDefault(); // Mencegah navigasi default
+                sessionStorage.removeItem('loggedInUser'); // Hapus data pengguna dari sessionStorage
+                showModal('Anda telah keluar. Mengalihkan ke halaman login...');
+                setTimeout(() => {
+                    window.location.href = 'index.html'; // Arahkan kembali ke halaman login
+                }, 1500);
+            });
+        }
+
+
+        function resetPageTransitionOverlay() {
+            pageTransitionOverlay.classList.remove('slide-out-left');
+            pageTransitionOverlay.style.transform = 'translateX(-100%)';
+            pageTransitionOverlay.style.opacity = '0';
+            pageTransitionOverlay.style.pointerEvents = 'none';
+        }
+
+        window.addEventListener('load', resetPageTransitionOverlay);
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                resetPageTransitionOverlay();
+            }
+        });
+    </script>
+</body>
+</html>
