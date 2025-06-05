@@ -138,19 +138,19 @@
             <nav>
                 <ul>
                     <li class="mb-2">
-                        <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                        <a href="profile.html" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
                             <i class="fas fa-home mr-3"></i>
                             <span>Home</span>
                         </a>
                     </li>
                     <li class="mb-2">
-                        <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                        <a href="profile.html" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
                             <i class="fas fa-user mr-3"></i>
                             <span>Profile</span>
                         </a>
                     </li>
                     <li class="mb-4">
-                        <a href="#" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
+                        <a href="index.html" id="logout-btn" class="flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 p-2 rounded-md">
                             <i class="fas fa-sign-out-alt mr-3"></i>
                             <span>Logout</span>
                         </a>
@@ -183,12 +183,12 @@
         <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden mb-6 profile-card-gradient">
             <div class="p-6 flex items-center text-white">
                 <div class="flex-shrink-0 w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center text-3xl font-bold mr-4 border-2 border-white">
-                    PP
+                    <span id="profile-initials">PP</span>
                 </div>
                 <div>
-                    <h2 class="text-xl font-bold">Fairuuz Syauqi Hanif</h2>
+                    <h2 class="text-xl font-bold" id="profile-name">Fairuuz Syauqi Hanif</h2>
                     <p class="text-sm opacity-90">Kelas XII-6</p>
-                    <p class="text-xs mt-1 opacity-80">Absen : 14</p>
+                    <p class="text-xs mt-1 opacity-80" id="profile-attendance">Absen : 14</p>
                 </div>
             </div>
         </div>
@@ -242,7 +242,6 @@
 
                 <p class="text-sm text-gray-600 mb-4 mt-6">KEBERSIHAN</p>
                 <div class="grid grid-cols-3 gap-4">
-                    <!-- Tombol JADWAL PIKET dengan ID baru -->
                     <button id="btn-jadwal-piket" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-100 transition-colors">
                         <i class="fas fa-broom text-2xl text-blue-500 mb-2"></i>
                         <span class="text-xxs text-gray-700 text-center">JADWAL PIKET</span>
@@ -263,17 +262,61 @@
     <div id="page-transition-overlay" class="page-transition-overlay"></div>
 
     <script>
-        // Mendapatkan referensi elemen sidebar
+        // --- JavaScript untuk Modal Kustom ---
+        const customModal = document.getElementById('custom-modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        function showModal(message) {
+            modalMessage.textContent = message;
+            customModal.classList.add('show');
+        }
+
+        function hideModal() {
+            customModal.classList.remove('show');
+        }
+
+        modalCloseBtn.addEventListener('click', hideModal);
+        customModal.addEventListener('click', function(event) {
+            if (event.target === customModal) {
+                hideModal();
+            }
+        });
+
+        // --- Logika pemuatan profil pengguna ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+
+            if (loggedInUser) {
+                // Perbarui elemen HTML dengan data pengguna yang login
+                document.getElementById('profile-name').textContent = loggedInUser.name;
+                document.getElementById('profile-attendance').textContent = `Absen : ${loggedInUser.attendance}`;
+                // Set inisial untuk gambar profil lingkaran
+                const nameParts = loggedInUser.name.split(' ');
+                let initials = '';
+                if (nameParts.length > 0) {
+                    initials += nameParts[0].charAt(0).toUpperCase();
+                }
+                if (nameParts.length > 1) {
+                    initials += nameParts[nameParts.length - 1].charAt(0).toUpperCase();
+                }
+                document.getElementById('profile-initials').textContent = initials || 'PP';
+
+            } else {
+                // Jika tidak ada data pengguna, arahkan kembali ke halaman login
+                showModal('Anda tidak login. Mengalihkan kembali ke halaman login...');
+                setTimeout(() => {
+                    window.location.href = 'index.html'; // Sesuaikan dengan nama file login Anda
+                }, 1500);
+            }
+        });
+
+        // --- JavaScript untuk Sidebar ---
         const openSidebarBtn = document.getElementById('open-sidebar');
         const closeSidebarBtn = document.getElementById('close-sidebar');
         const sidebarMenu = document.getElementById('sidebar-menu');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-        /**
-         * Fungsi untuk membuka sidebar.
-         * Menghapus kelas 'translate-x-full' dan menambahkan 'translate-x-0' untuk menggeser sidebar masuk.
-         * Menampilkan overlay dan mengatur opasitasnya menjadi 100%.
-         */
         function openSidebar() {
             sidebarMenu.classList.remove('translate-x-full');
             sidebarMenu.classList.add('translate-x-0');
@@ -281,14 +324,9 @@
             setTimeout(() => {
                 sidebarOverlay.classList.remove('opacity-0');
                 sidebarOverlay.classList.add('opacity-100');
-            }, 10); // Sedikit penundaan untuk transisi overlay
+            }, 10);
         }
 
-        /**
-         * Fungsi untuk menutup sidebar.
-         * Menghapus kelas 'translate-x-0' dan menambahkan 'translate-x-full' untuk menggeser sidebar keluar.
-         * Mengatur opasitas overlay menjadi 0% dan menyembunyikannya setelah transisi selesai.
-         */
         function closeSidebar() {
             sidebarMenu.classList.remove('translate-x-0');
             sidebarMenu.classList.add('translate-x-full');
@@ -296,162 +334,93 @@
             sidebarOverlay.classList.add('opacity-0');
             setTimeout(() => {
                 sidebarOverlay.classList.add('hidden');
-            }, 300); // Sesuaikan dengan durasi transisi CSS (0.3s)
+            }, 300);
         }
 
-        // Event listener untuk membuka sidebar
         openSidebarBtn.addEventListener('click', openSidebar);
-
-        // Event listener untuk menutup sidebar (tombol X)
         closeSidebarBtn.addEventListener('click', closeSidebar);
-
-        // Event listener untuk menutup sidebar (klik overlay)
         sidebarOverlay.addEventListener('click', closeSidebar);
 
         // --- JavaScript untuk Pop-up Menu Saldo Kas ---
         const openPopupMenuBtn = document.getElementById('open-popup-menu');
         const saldoPopupMenu = document.getElementById('saldo-popup-menu');
 
-        /**
-         * Fungsi untuk membuka/menutup pop-up menu saldo kas.
-         * Menggunakan toggle untuk kelas 'hidden'.
-         */
         function togglePopupMenu() {
             saldoPopupMenu.classList.toggle('hidden');
         }
 
-        // Event listener untuk membuka/menutup pop-up saat ikon titik tiga diklik
         openPopupMenuBtn.addEventListener('click', function(event) {
-            event.stopPropagation(); // Mencegah event klik menyebar ke document
+            event.stopPropagation();
             togglePopupMenu();
         });
 
-        // Event listener untuk menutup pop-up saat mengklik di luar pop-up
         document.addEventListener('click', function(event) {
             if (!saldoPopupMenu.classList.contains('hidden') && !saldoPopupMenu.contains(event.target) && event.target !== openPopupMenuBtn) {
                 saldoPopupMenu.classList.add('hidden');
             }
         });
 
-        // --- JavaScript untuk Modal Kustom ---
-        const customModal = document.getElementById('custom-modal');
-        const modalMessage = document.getElementById('modal-message');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
-
-        /**
-         * Fungsi untuk menampilkan modal kustom dengan pesan tertentu.
-         * @param {string} message - Pesan yang akan ditampilkan di modal.
-         */
-        function showModal(message) {
-            modalMessage.textContent = message;
-            customModal.classList.add('show');
-        }
-
-        /**
-         * Fungsi untuk menyembunyikan modal kustom.
-         */
-        function hideModal() {
-            customModal.classList.remove('show');
-        }
-
-        // Event listener untuk menutup modal saat tombol OK diklik
-        modalCloseBtn.addEventListener('click', hideModal);
-
-        // Event listener untuk menutup modal saat overlay modal diklik
-        customModal.addEventListener('click', function(event) {
-            // Hanya tutup modal jika yang diklik adalah overlay, bukan konten modal itu sendiri
-            if (event.target === customModal) {
-                hideModal();
-            }
-        });
-
-        // Event listener untuk setiap item di pop-up menu (untuk aksi)
         saldoPopupMenu.addEventListener('click', function(event) {
             const action = event.target.dataset.action;
             if (action) {
-                // Mengganti alert() dengan showModal()
                 showModal(`Anda mengklik: ${event.target.textContent}`);
-                saldoPopupMenu.classList.add('hidden'); // Tutup pop-up setelah klik
+                saldoPopupMenu.classList.add('hidden');
             }
         });
 
-        // --- JavaScript untuk Navigasi Halaman Jadwal Pembelajaran dengan Animasi ---
-        const btnJadwalPembelajaran = document.getElementById('btn-jadwal-pembelajaran');
+        // --- JavaScript untuk Navigasi Halaman dengan Animasi ---
         const pageTransitionOverlay = document.getElementById('page-transition-overlay');
 
-        /**
-         * Fungsi untuk mengarahkan pengguna ke halaman jadwal pembelajaran dengan animasi.
-         */
-        function goToJadwalPembelajaranWithAnimation() {
-            // Pastikan overlay di posisi awal dan terlihat
+        function goToPageWithAnimation(url) {
             pageTransitionOverlay.classList.remove('slide-out-left');
             pageTransitionOverlay.style.transform = 'translateX(0)';
             pageTransitionOverlay.style.opacity = '1';
             pageTransitionOverlay.style.pointerEvents = 'auto';
 
-            // Beri sedikit waktu agar browser merender posisi awal sebelum memulai transisi
             setTimeout(() => {
-                // Mulai animasi geser keluar
                 pageTransitionOverlay.classList.add('slide-out-left');
-            }, 10); // Penundaan sangat singkat
+            }, 10);
 
-            // Setelah animasi selesai, baru navigasi ke halaman baru
             setTimeout(() => {
-                window.location.href = 'jadwal-pembelajaran.html'; // Ganti dengan path yang benar jika berbeda
-            }, 500); // Sesuaikan dengan durasi transisi CSS (0.5s)
+                window.location.href = url;
+            }, 500);
         }
 
         // Event listener untuk tombol "JADWAL PEMBELAJARAN"
+        const btnJadwalPembelajaran = document.getElementById('btn-jadwal-pembelajaran');
         if (btnJadwalPembelajaran) {
-            btnJadwalPembelajaran.addEventListener('click', goToJadwalPembelajaranWithAnimation);
-        }
-
-        // --- JavaScript baru untuk Navigasi Halaman Jadwal Piket dengan Animasi ---
-        const btnJadwalPiket = document.getElementById('btn-jadwal-piket');
-
-        /**
-         * Fungsi untuk mengarahkan pengguna ke halaman jadwal piket dengan animasi.
-         */
-        function goToJadwalPiketWithAnimation() {
-            // Pastikan overlay di posisi awal dan terlihat
-            pageTransitionOverlay.classList.remove('slide-out-left');
-            pageTransitionOverlay.style.transform = 'translateX(0)';
-            pageTransitionOverlay.style.opacity = '1';
-            pageTransitionOverlay.style.pointerEvents = 'auto';
-
-            // Beri sedikit waktu agar browser merender posisi awal sebelum memulai transisi
-            setTimeout(() => {
-                // Mulai animasi geser keluar
-                pageTransitionOverlay.classList.add('slide-out-left');
-            }, 10); // Penundaan sangat singkat
-
-            // Setelah animasi selesai, baru navigasi ke halaman baru
-            setTimeout(() => {
-                window.location.href = 'jadwal-piket.html'; // Ini adalah nama file halaman jadwal piket Anda
-            }, 500); // Sesuaikan dengan durasi transisi CSS (0.5s)
+            btnJadwalPembelajaran.addEventListener('click', () => goToPageWithAnimation('jadwal-pembelajaran.html'));
         }
 
         // Event listener untuk tombol "JADWAL PIKET"
+        const btnJadwalPiket = document.getElementById('btn-jadwal-piket');
         if (btnJadwalPiket) {
-            btnJadwalPiket.addEventListener('click', goToJadwalPiketWithAnimation);
+            btnJadwalPiket.addEventListener('click', () => goToPageWithAnimation('jadwal-piket.html'));
         }
 
-        /**
-         * Fungsi untuk mereset overlay transisi halaman saat halaman dimuat atau diakses dari cache.
-         */
+        // --- Logout functionality ---
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(event) {
+                event.preventDefault(); // Mencegah navigasi default
+                sessionStorage.removeItem('loggedInUser'); // Hapus data pengguna dari sessionStorage
+                showModal('Anda telah keluar. Mengalihkan ke halaman login...');
+                setTimeout(() => {
+                    window.location.href = 'index.html'; // Arahkan kembali ke halaman login
+                }, 1500);
+            });
+        }
+
+
         function resetPageTransitionOverlay() {
             pageTransitionOverlay.classList.remove('slide-out-left');
-            pageTransitionOverlay.style.transform = 'translateX(-100%)'; // Sembunyikan overlay
+            pageTransitionOverlay.style.transform = 'translateX(-100%)';
             pageTransitionOverlay.style.opacity = '0';
             pageTransitionOverlay.style.pointerEvents = 'none';
         }
 
-        // Pastikan overlay tersembunyi saat halaman dimuat pertama kali
         window.addEventListener('load', resetPageTransitionOverlay);
-
-        // Pastikan overlay tersembunyi saat halaman diakses dari back/forward cache
         window.addEventListener('pageshow', function(event) {
-            // event.persisted adalah true jika halaman dimuat dari bfcache
             if (event.persisted) {
                 resetPageTransitionOverlay();
             }
